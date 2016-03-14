@@ -14,7 +14,6 @@ from temperature_monitor.lib.store import Store
 from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
-from say_temperature.lib  import validate_input, parse, say
 
 labels =[u'Extérieur', u'Sous-sol', u'Bureau', u'Chambre à coucher', u'Grenier']
 
@@ -50,9 +49,6 @@ def temperatures():
 @app.route('/temperatures/<line>', methods=['GET'])
 def temperature(line):
     results = get_one_temperature(line).values()[0]
-    #input_temperature = validate_input(results['temp'])
-    #temperature_words = parse(input_temperature)
-    #say(temperature_words)
     if request.args.get('format') == u'html':
         return render_template("temperature.html", **results)
 
