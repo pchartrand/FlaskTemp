@@ -1,0 +1,3 @@
+# m h  dom mon dow   command
+0 0,6,12,18 * * * export MEMCACHED_HOST=192.168.1.27:11211; export ARDUINO_NUMBER_OF_INPUTS=5; cd /home/you/FlaskTemp/static && /home/you/.virtualenvs/flask-temp/local/bin/tempgraphsaver 'Exterieur' 'Sous-sol' 'Bureau' 'Chambre' 'Grenier'
+
