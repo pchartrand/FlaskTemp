@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#- coding: utf-8 -#
+
 import os
 import json
 import matplotlib
@@ -6,13 +9,16 @@ import matplotlib.pyplot as plt
 
 from flask import Flask, render_template, request
 from pylab import savefig
-
+from temperature_monitor.lib.constants import ARDUINO_NUMBER_OF_INPUTS
 from temperature_monitor.lib.store import Store
 from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
+from say_temperature.lib  import validate_input, parse, say
 
-store = Store(host='192.168.1.147:11211')
+labels =[u'Extérieur', u'Sous-sol', u'Bureau', u'Chambre à coucher', u'Grenier']
+
+store = Store()
 app = Flask(__name__)
 
 
@@ -27,7 +33,7 @@ def get_one_temperature(line):
 
 def get_temperatures():
     results = {}
-    for i in range(2):
+    for i in range(ARDUINO_NUMBER_OF_INPUTS):
         results.update(get_one_temperature(i))
     return results
 
@@ -35,14 +41,20 @@ def get_temperatures():
 @app.route('/temperatures', methods=['GET'])
 def temperatures():
     results = get_temperatures()
+    if request.args.get('format') == u'html':
+        print results
+        return render_template("temperatures.html", results=results)
     return json.dumps(results)
 
 
 @app.route('/temperatures/<line>', methods=['GET'])
 def temperature(line):
-    results = get_one_temperature(line)
+    results = get_one_temperature(line).values()[0]
+    #input_temperature = validate_input(results['temp'])
+    #temperature_words = parse(input_temperature)
+    #say(temperature_words)
     if request.args.get('format') == u'html':
-        return render_template("temperature.html",**results['line_0'])
+        return render_template("temperature.html", **results)
 
     return json.dumps(results)
 
@@ -50,12 +62,13 @@ def temperature(line):
 def show_variations():
     plt.clf()
     fetcher = StoreSeriesFetcher(store)
-    s0, s1 = fetcher.fetch()
-    filename = 'temperatures_%s.png' % s0[0][0]
+    series = fetcher.fetch()
+    filename = 'temperatures_%s.png' % series[0][0][0]
     file_path = os.path.join('static/', filename)
-    for s in (s0, s1):
+
+    for s in series:
         s.reverse()
-    plot_temperatures(plt, s0, s1)
+    plot_temperatures(plt, series, labels, ['green', 'lightseagreen', 'royalblue', 'purple', 'crimson'])
     if not os.path.exists(file_path):
         savefig(file_path, dpi=300)
 
