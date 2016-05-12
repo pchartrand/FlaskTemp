@@ -58,7 +58,7 @@ def temperature(line):
 def show_variations():
     plt.clf()
     fetcher = StoreSeriesFetcher(store)
-    series = fetcher.fetch()
+    series = fetcher.smooth(sampling=12)
     filename = 'temperatures_%s.png' % series[0][0][0]
     file_path = os.path.join('static/', filename)
 
