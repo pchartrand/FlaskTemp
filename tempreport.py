@@ -15,7 +15,7 @@ from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
 
-labels =[u'Extérieur', u'Sous-sol', u'Bureau', u'Chambre à coucher', u'Grenier']
+labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 
 store = Store()
 app = Flask(__name__)
@@ -58,13 +58,14 @@ def temperature(line):
 def show_variations():
     plt.clf()
     fetcher = StoreSeriesFetcher(store)
-    series = fetcher.smooth(sampling=12)
+    series = fetcher.fetch()
     filename = 'temperatures_%s.png' % series[0][0][0]
     file_path = os.path.join('static/', filename)
 
     for s in series:
         s.reverse()
-    plot_temperatures(plt, series, labels, ['green', 'lightseagreen', 'royalblue', 'purple', 'crimson'])
+    
+    plot_temperatures(plt, series, labels, [ 'green', 'royalblue', 'crimson', 'purple','blue','orange'])
     if not os.path.exists(file_path):
         savefig(file_path, dpi=300)
 
