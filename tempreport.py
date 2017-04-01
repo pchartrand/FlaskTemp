@@ -20,7 +20,7 @@ labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  
 store = Store()
 app = Flask(__name__)
 
-NUMBER_OF_MEASUREMENTS_IN_GRAPH = 720
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 240
 
 
 def get_one_temperature(line):
@@ -59,11 +59,11 @@ def temperature(line):
 @app.route('/temperature-data.json', methods=['GET'])
 def send_data():
     fetcher = StoreSeriesFetcher(store)
-    series = fetcher.fetch()
+    series = fetcher.fetch(NUMBER_OF_MEASUREMENTS_IN_GRAPH * ARDUINO_NUMBER_OF_INPUTS)
     series_as_json = []
     for serie in series:
         serie_as_json = []
-        for point in serie[0:NUMBER_OF_MEASUREMENTS_IN_GRAPH]:
+        for point in serie:
             serie_as_json.append(
                 dict(
                     date=point[0].strftime('%Y-%m-%d %H:%M'),

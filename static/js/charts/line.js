@@ -131,7 +131,8 @@
       // for now, if args.colors is not an array, then keep moving as if nothing happened.
       // if args.colors is not long enough, default to the usual line_id color.
       if (args.colors.constructor === Array) {
-        this_path.attr('stroke', args.colors[which_line]);
+        this_path.attr('stroke', args.colors[which_line])
+        this_path.attr('stroke-width', 5.0);
         if (args.colors.length < which_line + 1) {
           // Go with default coloring.
           // this_path.classed('mg-line' + (line_id) + '-color', true);
@@ -179,7 +180,6 @@
       // if we're animating on load, animate the line from its median value
       var this_path = svg.append('path')
         .attr('class', 'mg-main-line mg-line' + line_id);
-
       mg_color_line(args, this_path, which_line, line_id);
       mg_add_line_element(args, plot, this_path, which_line);
     }

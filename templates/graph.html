@@ -52,7 +52,7 @@
     <!-- dev end -->
     <link href='static/css/temperatures.css' rel='stylesheet' type='text/css'>
 </head>
-<body background="/static/temperature-fonds.png">
+<body background="static/temperature-fonds.png">
     <div class="container">
         <div class='head'>
             <ul>
@@ -76,18 +76,18 @@
             }
 
             MG.data_graphic({
-                title: "Temperatures",
+                title: "Températures",
                 description: "Mesures des températures intérieures et extérieures",
                 data: data,
-                width: 1100,
-                height: 850,
-                right: 40,
-                missing_is_hidden: true,
+                width: 900,
+                height: 600,
+                point_size: 4,
                 target: '#temperatures',
                 legend: ['Extérieur', 'Sous-sol', 'C. à coucher', 'Bureau', 'Grenier',  'Abeilles'],
                 legend_target: '.legend',
                 //aggregate_rollover: true,
-                colors: ['#00FF00', '#0000FF','#FF0000', '#FF00FF','#00FFFF','#BBBB00'],
+                colors: ['#00DD00', '#0000DD','#DD0000', '#BB00BB','#00BBBB','#BBBB00'],
+                european_clock: true,
 
             });
         });
