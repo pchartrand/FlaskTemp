@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>temperatures</title>
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
+    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+
+    <link href='http://www.metricsgraphicsjs.org/css/metricsgraphics.css' rel='stylesheet' type='text/css'>
+    <link href='http://www.metricsgraphicsjs.org/css/metricsgraphics-demo.css' rel='stylesheet' type='text/css' id='light'>
+    <link href='' rel='stylesheet' type='text/css' id='dark'>
+    <link href='' rel='stylesheet' type='text/css' id='accessible'>
+    <link href='http://www.metricsgraphicsjs.org/css/highlightjs-default.css' rel='stylesheet' type='text/css' id='light-code'>
+    <link href='' rel='stylesheet' type='text/css' id='dark-code'>
+
+    <script src='http://www.metricsgraphicsjs.org/js/lib/highlight.pack.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js'></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+
+ <!-- dev start -->
+    <script src='static/js/MG.js'></script>
+    <script src='static/js/misc/utility.js'></script>
+    <script src='static/js/common/data_graphic.js'></script>
+    <script src='static/js/common/hooks.js'></script>
+    <script src='static/js/common/register.js'></script>
+    <script src='static/js/common/bootstrap_tooltip_popover.js'></script>
+    <script src='static/js/common/scales.js'></script>
+    <script src='static/js/common/chart_title.js'></script>
+    <script src='static/js/common/y_axis.js'></script>
+    <script src='static/js/common/x_axis.js'></script>
+    <script src='static/js/common/scales.js'></script>
+    <script src='static/js/common/init.js'></script>
+    <script src='static/js/common/markers.js'></script>
+    <script src='static/js/common/rollover.js'></script>
+    <script src='static/js/common/window_listeners.js'></script>
+    <script src='static/js/layout/bootstrap_dropdown.js'></script>
+    <script src='static/js/layout/button.js'></script>
+    <script src='static/js/charts/line.js'></script>
+    <script src='static/js/charts/histogram.js'></script>
+    <script src='static/js/charts/point.js'></script>
+    <script src='static/js/charts/bar.js'></script>
+    <script src='static/js/charts/table.js'></script>
+    <script src='static/js/charts/missing.js'></script>
+    <script src='static/js/misc/process.js'></script>
+    <script src='static/js/misc/smoothers.js'></script>
+    <script src='static/js/misc/formatters.js'></script>
+    <script src='static/js/misc/transitions.js'></script>
+    <script src='static/js/misc/error.js'></script>
+    <!-- dev end -->
+    <link href='static/css/temperatures.css' rel='stylesheet' type='text/css'>
+</head>
+<body background="/static/temperature-fonds.png">
+    <div class="container">
+        <div class='head'>
+            <ul>
+            </ul>
+        <div class="content">
+            <div class="row">
+                <div class="text-center"><p>&nbsp;</p></div>
+            </div>
+            <div class="row">
+                <div class="text-center" id="temperatures"> </div>
+            </div>
+            <div class="row">
+                <div class="text-center"><a href="temperature-data.json">data</a></div>
+            </div>
+        </div>
+    </div>
+        <script language="javascript">
+        d3.json('temperature-data.json', function(data) {
+            for (var i = 0; i < data.length; i++) {
+                data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
+            }
+
+            MG.data_graphic({
+                title: "Temperatures",
+                description: "Mesures des températures intérieures et extérieures",
+                data: data,
+                width: 1100,
+                height: 850,
+                right: 40,
+                missing_is_hidden: true,
+                target: '#temperatures',
+                legend: ['Extérieur', 'Sous-sol', 'C. à coucher', 'Bureau', 'Grenier',  'Abeilles'],
+                legend_target: '.legend',
+                //aggregate_rollover: true,
+                colors: ['#00FF00', '#0000FF','#FF0000', '#FF00FF','#00FFFF','#BBBB00'],
+
+            });
+        });
+        </script>
+    </div>
+</body>
+</html>

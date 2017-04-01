@@ -1,0 +1,8 @@
+svg line {
+    opacity: 1;
+    shape-rendering: auto;
+    stroke: #b3b2b2;
+    stroke-width: 10px;
+    stroke: none;
+    stroke-linecap: 'round';
+}

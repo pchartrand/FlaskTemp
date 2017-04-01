@@ -20,6 +20,8 @@ labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  
 store = Store()
 app = Flask(__name__)
 
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 720
+
 
 def get_one_temperature(line):
     (line, temp, timestamp) = store.get_one(store.last() - int(line))
@@ -53,6 +55,33 @@ def temperature(line):
         return render_template("temperature.html", **results)
 
     return json.dumps(results)
+
+@app.route('/temperature-data.json', methods=['GET'])
+def send_data():
+    fetcher = StoreSeriesFetcher(store)
+    series = fetcher.fetch()
+    series_as_json = []
+    for serie in series:
+        serie_as_json = []
+        for point in serie[0:NUMBER_OF_MEASUREMENTS_IN_GRAPH]:
+            serie_as_json.append(
+                dict(
+                    date=point[0].strftime('%Y-%m-%d %H:%M'),
+                    value=round(point[1], 1)
+                )
+            )
+        series_as_json.append(serie_as_json)
+
+    return app.response_class(
+        response=json.dumps(series_as_json),
+        status=200,
+        mimetype='application/json'
+    )
+
+@app.route('/temperature-graph', methods=['GET'])
+def graph():
+    return render_template('graph.html')
+
 
 @app.route('/temperature-plots', methods=['GET'])
 def show_variations():
