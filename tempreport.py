@@ -20,7 +20,7 @@ labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  
 store = Store()
 app = Flask(__name__)
 
-NUMBER_OF_MEASUREMENTS_IN_GRAPH = 240
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 480
 
 
 def get_one_temperature(line):
