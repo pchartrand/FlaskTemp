@@ -23,7 +23,9 @@ store = Store()
 app = Flask(__name__)
 
 NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
-
+USE_WEB_FONTS = False
+USE_JQUERY = True
+USE_MG_DEV_VERSION = False
 
 def get_one_temperature(line):
     (line, temp, timestamp) = store.get_one(store.last() - int(line))
@@ -90,7 +92,10 @@ def graph():
         datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         n=n,
         more=n * 2,
-        less=n / 2
+        less=n / 2,
+        use_web_fonts=USE_WEB_FONTS,
+        use_jquery=USE_JQUERY,
+        dev_version=USE_MG_DEV_VERSION
     )
 
 

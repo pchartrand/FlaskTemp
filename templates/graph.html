@@ -3,20 +3,21 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title>temperatures</title>
-
+    {% if use_web_fonts %}
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
     <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
-
+    {% endif %}
     <link href='static/css/bootstrap/3.2.0/bootstrap.min.css' rel='stylesheet' type='text/css'>
     <link href='static/css/metricsgraphics.css' rel='stylesheet' type='text/css'>
     <link href='static/css/temperatures.css' rel='stylesheet' type='text/css'>
 
+    {% if use_jquery %}
+    <!-- jquery is only used to display the graph description -->
     <script src='static/js/libs/jquery/3.1.0/jquery.min.js'></script>
+    {%endif %}
     <script src="static/js/libs/d3js/d3.v4.min.js"></script>
-    <script src='static/js/libs/metricsgraphics.min.js'></script>
-
- <!-- dev start
+    {%if dev_version %}
     <script src='static/js/mg-dev/MG.js'></script>
     <script src='static/js/mg-dev/misc/utility.js'></script>
     <script src='static/js/mg-dev/common/data_graphic.js'></script>
@@ -45,16 +46,17 @@
     <script src='static/js/mg-dev/misc/formatters.js'></script>
     <script src='static/js/mg-dev/misc/transitions.js'></script>
     <script src='static/js/mg-dev/misc/error.js'></script>
-     dev end -->
-
+    {% else %}
+    <script src='static/js/libs/metricsgraphics.min.js'></script>
+    {% endif %}
 </head>
 <body background="static/temperature-fonds.png">
     <div class="container">
         <div class='head'>
             <p class="text-center">
-                <a title="afficher une plus petite plage de temps" href="?n={{less}}">-</a>
+                <a title="afficher une plus petite plage de temps" href="?n={{less}}">- </a>
                 {{datetime}}
-                <a title="afficher une plus grande plage de temps" href="?n={{more}}">+</a>
+                <a title="afficher une plus grande plage de temps" href="?n={{more}}"> +</a>
             </p>
         <div class="content">
             <div class="row">
@@ -86,8 +88,7 @@
                 legend_target: '.legend',
                 //aggregate_rollover: true,
                 colors: ['#00DD00', '#0000DD','#DD0000', '#BB00BB','#00BBBB','#BBBB00'],
-                european_clock: true,
-
+                european_clock: true
             });
         });
         </script>
