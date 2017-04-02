@@ -24,7 +24,7 @@ app = Flask(__name__)
 
 NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
 USE_WEB_FONTS = False
-USE_JQUERY = True
+USE_JQUERY = False
 USE_MG_DEV_VERSION = False
 
 def get_one_temperature(line):
@@ -87,6 +87,7 @@ def send_data():
 @app.route('/temperature-graph', methods=['GET'])
 def graph():
     n = int(request.args.get('n',NUMBER_OF_MEASUREMENTS_IN_GRAPH))
+    duration = "{} h".format(n / 60) if n > 60 else "{} min".format(n)
     return render_template(
         'graph.html',
         datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -95,7 +96,8 @@ def graph():
         less=n / 2,
         use_web_fonts=USE_WEB_FONTS,
         use_jquery=USE_JQUERY,
-        dev_version=USE_MG_DEV_VERSION
+        dev_version=USE_MG_DEV_VERSION,
+        duration=duration
     )
 
 
