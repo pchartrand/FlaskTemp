@@ -3,6 +3,8 @@
 
 import os
 import json
+import datetime
+
 import matplotlib
 matplotlib.use('Agg')  #graphical backend not requiring X11
 import matplotlib.pyplot as plt
@@ -20,7 +22,7 @@ labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  
 store = Store()
 app = Flask(__name__)
 
-NUMBER_OF_MEASUREMENTS_IN_GRAPH = 480
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
 
 
 def get_one_temperature(line):
@@ -58,8 +60,9 @@ def temperature(line):
 
 @app.route('/temperature-data.json', methods=['GET'])
 def send_data():
+    n = int(request.args.get('n',NUMBER_OF_MEASUREMENTS_IN_GRAPH))
     fetcher = StoreSeriesFetcher(store)
-    series = fetcher.fetch(NUMBER_OF_MEASUREMENTS_IN_GRAPH * ARDUINO_NUMBER_OF_INPUTS)
+    series = fetcher.fetch(n * ARDUINO_NUMBER_OF_INPUTS)
     series_as_json = []
     for serie in series:
         serie_as_json = []
@@ -78,9 +81,17 @@ def send_data():
         mimetype='application/json'
     )
 
+
 @app.route('/temperature-graph', methods=['GET'])
 def graph():
-    return render_template('graph.html')
+    n = int(request.args.get('n',NUMBER_OF_MEASUREMENTS_IN_GRAPH))
+    return render_template(
+        'graph.html',
+        datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        n=n,
+        more=n * 2,
+        less=n / 2
+    )
 
 
 @app.route('/temperature-plots', methods=['GET'])

@@ -51,8 +51,11 @@
 <body background="static/temperature-fonds.png">
     <div class="container">
         <div class='head'>
-            <ul>
-            </ul>
+            <p class="text-center">
+                <a title="afficher une plus petite plage de temps" href="?n={{less}}">-</a>
+                {{datetime}}
+                <a title="afficher une plus grande plage de temps" href="?n={{more}}">+</a>
+            </p>
         <div class="content">
             <div class="row">
                 <div class="text-center"><p>&nbsp;</p></div>
@@ -61,21 +64,21 @@
                 <div class="text-center" id="temperatures"> </div>
             </div>
             <div class="row">
-                <div class="text-center"><a href="temperature-data.json">data</a></div>
+                <div class="text-center"><a href="temperature-data.json?n={{n}}">data</a></div>
             </div>
         </div>
     </div>
         <script language="javascript">
-        d3.json('temperature-data.json', function(data) {
+        d3.json('temperature-data.json?n={{n}}', function(data) {
             for (var i = 0; i < data.length; i++) {
                 data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
             }
 
             MG.data_graphic({
                 title: "Températures",
-                description: "Mesures des températures intérieures et extérieures",
+                description: "Mesures des températures intérieures et extérieures des dernières 24 heures.",
                 data: data,
-                width: 900,
+                width: 1000,
                 height: 600,
                 point_size: 4,
                 target: '#temperatures',
