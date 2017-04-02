@@ -87,7 +87,7 @@
                 height: 600,
                 point_size: 4,
                 target: '#temperatures',
-                legend: ['Extérieur', 'Sous-sol', 'C. à coucher', 'Bureau', 'Grenier',  'Abeilles'],
+                legend: [ {% for label in labels %}'{{label}}',{% endfor %} ],
                 legend_target: '.legend',
                 //aggregate_rollover: true,
                 colors: ['#00DD00', '#0000DD','#DD0000', '#BB00BB','#00BBBB','#BBBB00'],

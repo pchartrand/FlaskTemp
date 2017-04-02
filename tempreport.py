@@ -97,7 +97,8 @@ def graph():
         use_web_fonts=USE_WEB_FONTS,
         use_jquery=USE_JQUERY,
         dev_version=USE_MG_DEV_VERSION,
-        duration=duration
+        duration=duration,
+        labels=labels
     )
 
 
