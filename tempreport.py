@@ -4,12 +4,13 @@
 import os
 import json
 import datetime
+from time import sleep
 
 import matplotlib
 matplotlib.use('Agg')  #graphical backend not requiring X11
 import matplotlib.pyplot as plt
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 from pylab import savefig
 from temperature_monitor.lib.constants import ARDUINO_NUMBER_OF_INPUTS
 from temperature_monitor.lib.store import Store
@@ -26,6 +27,7 @@ NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
 USE_WEB_FONTS = False
 USE_JQUERY = False
 USE_MG_DEV_VERSION = False
+REFRESH_INTERVAL = 300
 
 def get_one_temperature(line):
     (line, temp, timestamp) = store.get_one(store.last() - int(line))
@@ -88,18 +90,22 @@ def send_data():
 def graph():
     n = int(request.args.get('n',NUMBER_OF_MEASUREMENTS_IN_GRAPH))
     duration = "{} h".format(n / 60) if n > 60 else "{} min".format(n)
-    return render_template(
-        'graph.html',
-        datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        n=n,
-        more=n * 2,
-        less=n / 2,
-        use_web_fonts=USE_WEB_FONTS,
-        use_jquery=USE_JQUERY,
-        dev_version=USE_MG_DEV_VERSION,
-        duration=duration,
-        labels=labels
+    resp = make_response(
+        render_template(
+            'graph.html',
+            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            n=n,
+            more=n * 2,
+            less=n / 2,
+            use_web_fonts=USE_WEB_FONTS,
+            use_jquery=USE_JQUERY,
+            dev_version=USE_MG_DEV_VERSION,
+            duration=duration,
+            labels=labels
+        )
     )
+    resp.headers['REFRESH'] = REFRESH_INTERVAL
+    return resp
 
 
 @app.route('/temperature-plots', methods=['GET'])
@@ -119,5 +125,12 @@ def show_variations():
 
     return render_template('variations.html', file_path=file_path, date_time=get_time())
 
+
+def retry():
+    try:
+        app.run(host='0.0.0.0', debug=True)
+    except:
+        sleep(3)
+        retry()
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    retry()
