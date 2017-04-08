@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>all temperatures</title>
+    {% if use_web_fonts %}
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
+    {% endif %}
+    <link href='static/css/bootstrap/3.2.0/bootstrap.min.css' rel='stylesheet' type='text/css'>
+    <link href='static/css/metricsgraphics.css' rel='stylesheet' type='text/css'>
+    <link href='static/css/temperatures.css' rel='stylesheet' type='text/css'>
+
+    {% if use_jquery %}
+    <!-- jquery is only used to display the graph description -->
+    <script src='static/js/libs/jquery/3.1.0/jquery.min.js'></script>
+    {%endif %}
+    <script src="static/js/libs/d3js/d3.v4.min.js"></script>
+    {%if dev_version %}
+    <script src='static/js/mg-dev/MG.js'></script>
+    <script src='static/js/mg-dev/misc/utility.js'></script>
+    <script src='static/js/mg-dev/common/data_graphic.js'></script>
+    <script src='static/js/mg-dev/common/hooks.js'></script>
+    <script src='static/js/mg-dev/common/register.js'></script>
+    <script src='static/js/mg-dev/common/bootstrap_tooltip_popover.js'></script>
+    <script src='static/js/mg-dev/common/scales.js'></script>
+    <script src='static/js/mg-dev/common/chart_title.js'></script>
+    <script src='static/js/mg-dev/common/y_axis.js'></script>
+    <script src='static/js/mg-dev/common/x_axis.js'></script>
+    <script src='static/js/mg-dev/common/scales.js'></script>
+    <script src='static/js/mg-dev/common/init.js'></script>
+    <script src='static/js/mg-dev/common/markers.js'></script>
+    <script src='static/js/mg-dev/common/rollover.js'></script>
+    <script src='static/js/mg-dev/common/window_listeners.js'></script>
+    <script src='static/js/mg-dev/layout/bootstrap_dropdown.js'></script>
+    <script src='static/js/mg-dev/layout/button.js'></script>
+    <script src='static/js/mg-dev/charts/line.js'></script>
+    <script src='static/js/mg-dev/charts/histogram.js'></script>
+    <script src='static/js/mg-dev/charts/point.js'></script>
+    <script src='static/js/mg-dev/charts/bar.js'></script>
+    <script src='static/js/mg-dev/charts/table.js'></script>
+    <script src='static/js/mg-dev/charts/missing.js'></script>
+    <script src='static/js/mg-dev/misc/process.js'></script>
+    <script src='static/js/mg-dev/misc/smoothers.js'></script>
+    <script src='static/js/mg-dev/misc/formatters.js'></script>
+    <script src='static/js/mg-dev/misc/transitions.js'></script>
+    <script src='static/js/mg-dev/misc/error.js'></script>
+    {% else %}
+    <script src='static/js/libs/metricsgraphics.min.js'></script>
+    {% endif %}
+</head>
+<body background="static/temperature-fonds.png">
+    <div class="container">
+        <div class='head'>
+            <p class="text-center">
+                {{datetime}} <br />{{measurements}}
+            </p>
+        <div class="content">
+            <div class="row">
+                <div class="text-center"><p>&nbsp;</p></div>
+            </div>
+            <div class="row">
+                <div class="text-center" id="temperatures"> </div>
+            </div>
+            <div class="row">
+                <div class="text-center"><a href="all-temperature-data.json">données</a></div>
+            </div>
+        </div>
+    </div>
+        <script language="javascript">
+        d3.json('all-temperature-data.json', function(data) {
+            for (var i = 0; i < data.length; i++) {
+                data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
+            }
+
+            MG.data_graphic({
+                title: "Toutes les températures",
+                description: "Mesures des températures intérieures et extérieures.",
+                data: data,
+                width: 1000,
+                height: 600,
+                point_size: 4,
+                target: '#temperatures',
+                legend: [ {% for label in labels %}'{{label}}',{% endfor %} ],
+                legend_target: '.legend',
+                //aggregate_rollover: true,
+                colors: ['#00DD00', '#0000DD','#DD0000', '#BB00BB','#00BBBB','#BBBB00'],
+                european_clock: true
+            });
+        });
+        </script>
+    </div>
+</body>
+</html>

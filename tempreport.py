@@ -4,6 +4,7 @@
 import os
 import json
 import datetime
+from collections import OrderedDict
 from time import sleep
 
 import matplotlib
@@ -21,6 +22,8 @@ from temperature_monitor.lib.templib import get_time
 labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 
 store = Store()
+store_cache = OrderedDict()
+
 app = Flask(__name__)
 
 NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
@@ -45,6 +48,26 @@ def get_temperatures():
     return results
 
 
+def series_to_json(series):
+    as_json = []
+    for n, serie  in enumerate(series):
+        serie_as_json = []
+        for point in serie:
+            date_value = point[0].strftime('%Y-%m-%d %H:%M')
+            value = round(point[1], 1)
+            serie_as_json.append(
+                dict(
+                    date=date_value,
+                    value=value
+                )
+            )
+            if not store_cache.get(n):
+                store_cache[n] = OrderedDict()
+            store_cache[n][date_value] = value
+        as_json.append(serie_as_json)
+    return as_json
+
+
 @app.route('/temperatures', methods=['GET'])
 def temperatures():
     results = get_temperatures()
@@ -62,22 +85,36 @@ def temperature(line):
 
     return json.dumps(results)
 
+
+@app.route('/all-temperature-data.json', methods=['GET'])
+def send_all_data():
+    fetcher = StoreSeriesFetcher(store)
+    fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
+
+    store_as_lol = []
+    for serie in store_cache:
+        serie_as_list = []
+        for date_time in store_cache[serie]:
+            measurement = dict(
+                date=date_time,
+                value=store_cache[serie][date_time])
+            serie_as_list.append(
+                measurement
+            )
+        store_as_lol.append(serie_as_list)
+    return app.response_class(
+        response=json.dumps(store_as_lol),
+        status=200,
+        mimetype='application/json'
+    )
+
+
 @app.route('/temperature-data.json', methods=['GET'])
 def send_data():
-    n = int(request.args.get('n',NUMBER_OF_MEASUREMENTS_IN_GRAPH))
+    n = int(request.args.get('n', NUMBER_OF_MEASUREMENTS_IN_GRAPH))
     fetcher = StoreSeriesFetcher(store)
     series = fetcher.fetch(n * ARDUINO_NUMBER_OF_INPUTS)
-    series_as_json = []
-    for serie in series:
-        serie_as_json = []
-        for point in serie:
-            serie_as_json.append(
-                dict(
-                    date=point[0].strftime('%Y-%m-%d %H:%M'),
-                    value=round(point[1], 1)
-                )
-            )
-        series_as_json.append(serie_as_json)
+    series_as_json = series_to_json(series)
 
     return app.response_class(
         response=json.dumps(series_as_json),
@@ -85,6 +122,21 @@ def send_data():
         mimetype='application/json'
     )
 
+
+@app.route('/all-temperatures-graph', methods=['GET'])
+def all_graph():
+    resp = make_response(
+        render_template(
+            'all-graph.html',
+            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            use_web_fonts=USE_WEB_FONTS,
+            use_jquery=USE_JQUERY,
+            dev_version=USE_MG_DEV_VERSION,
+            labels=labels
+        )
+    )
+    resp.headers['REFRESH'] = REFRESH_INTERVAL
+    return resp
 
 @app.route('/temperature-graph', methods=['GET'])
 def graph():
