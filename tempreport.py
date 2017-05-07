@@ -4,7 +4,6 @@
 import os
 import json
 import datetime
-from collections import OrderedDict
 from time import sleep
 
 import matplotlib
@@ -18,11 +17,12 @@ from temperature_monitor.lib.store import Store
 from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
+from storecache import StoreCache
 
 labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 
 store = Store()
-store_cache = OrderedDict()
+store_cache = StoreCache()
 
 app = Flask(__name__)
 
@@ -31,6 +31,7 @@ USE_WEB_FONTS = False
 USE_JQUERY = False
 USE_MG_DEV_VERSION = False
 REFRESH_INTERVAL = 300
+KEPT_MINUTE = '0'
 
 def get_one_temperature(line):
     (line, temp, timestamp) = store.get_one(store.last() - int(line))
@@ -61,11 +62,14 @@ def series_to_json(series):
                     value=value
                 )
             )
-            if not store_cache.get(n):
-                store_cache[n] = OrderedDict()
-            store_cache[n][date_value] = value
+            store_if_kept_minute(date_value, n, value)
         as_json.append(serie_as_json)
     return as_json
+
+
+def store_if_kept_minute(date_value, n, value):
+    if date_value.endswith(KEPT_MINUTE):
+        store_cache.add_to_cache(date_value, n, value)
 
 
 @app.route('/temperatures', methods=['GET'])
@@ -92,15 +96,8 @@ def send_all_data():
     fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
 
     store_as_lol = []
-    for serie in store_cache:
-        serie_as_list = []
-        for date_time in store_cache[serie]:
-            measurement = dict(
-                date=date_time,
-                value=store_cache[serie][date_time])
-            serie_as_list.append(
-                measurement
-            )
+    for serie in store_cache.get_series():
+        serie_as_list = store_cache.get_measurements(serie)
         store_as_lol.append(serie_as_list)
     return app.response_class(
         response=json.dumps(store_as_lol),
