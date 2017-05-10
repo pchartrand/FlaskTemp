@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>Températures</title>
+    <title>Températures de la semaine</title>
     {% if use_web_fonts %}
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
@@ -54,13 +54,9 @@
     <div class="container">
         <div class='head'>
             <p class="text-center">
-                {{datetime}} <br />
-                <a title="affiche les 24 dernières heures" href="?n=1440"> 24 h</a>
-                <a title="double la plage de temps" href="?n={{more}}"> ×2</a>
-                {{duration}}
-                <a title="divise la plage de temps par deux" href="?n={{less}}">÷2 </a>
-                <a title="affiche la dernière heure" href="?n=60">60 min</a> <br />
-                <a title="hebdomadaire" href="/weekly-temperatures-graph">hebdomadaire</a> |
+                {{datetime}} <br />{{measurements}}
+                <br />
+                <a title="cumulatif" href="/temperature-graph">courant</a> |
                 <a title="mensuel" href="/monthly-temperatures-graph">mensuel</a>
 
             </p>
@@ -72,19 +68,19 @@
                 <div class="text-center" id="temperatures"> </div>
             </div>
             <div class="row">
-                <div class="text-center"><a href="temperature-data.json?n={{n}}">données</a></div>
+                <div class="text-center"><a href="weekly-temperature-data.json">données</a></div>
             </div>
         </div>
     </div>
         <script language="javascript">
-        d3.json('temperature-data.json?n={{n}}', function(data) {
+        d3.json('weekly-temperature-data.json', function(data) {
             for (var i = 0; i < data.length; i++) {
                 data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
             }
 
             MG.data_graphic({
-                title: "Températures",
-                description: "Mesures des températures intérieures et extérieures des dernières 24 heures.",
+                title: "Températures de la semaine",
+                description: "Mesures des températures intérieures et extérieures.",
                 data: data,
                 width: 1000,
                 height: 600,

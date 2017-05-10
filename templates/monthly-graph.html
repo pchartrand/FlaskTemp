@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>all temperatures</title>
+    <title>Températures du mois</title>
     {% if use_web_fonts %}
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
@@ -56,7 +56,8 @@
             <p class="text-center">
                 {{datetime}} <br />{{measurements}}
                 <br />
-                <a title="cumulatif" href="/temperature-graph">courant</a>
+                <a title="courant" href="/temperature-graph">courant</a> |
+                <a title="hebdomadaire" href="/weekly-temperatures-graph">hebdomadaire</a>
             </p>
         <div class="content">
             <div class="row">
@@ -66,18 +67,18 @@
                 <div class="text-center" id="temperatures"> </div>
             </div>
             <div class="row">
-                <div class="text-center"><a href="all-temperature-data.json">données</a></div>
+                <div class="text-center"><a href="monthly-temperature-data.json">données</a></div>
             </div>
         </div>
     </div>
         <script language="javascript">
-        d3.json('all-temperature-data.json', function(data) {
+        d3.json('monthly-temperature-data.json', function(data) {
             for (var i = 0; i < data.length; i++) {
                 data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
             }
 
             MG.data_graphic({
-                title: "Toutes les températures",
+                title: "Températures du mois",
                 description: "Mesures des températures intérieures et extérieures.",
                 data: data,
                 width: 1000,

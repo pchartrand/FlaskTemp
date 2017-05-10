@@ -22,7 +22,8 @@ from storecache import StoreCache
 labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 
 store = Store()
-store_cache = StoreCache()
+weekly_cache = StoreCache()
+monthly_cache = StoreCache()
 
 app = Flask(__name__)
 
@@ -32,6 +33,7 @@ USE_JQUERY = False
 USE_MG_DEV_VERSION = False
 REFRESH_INTERVAL = 300
 KEPT_MINUTE = '0'
+KEPT_HOUR = '00'
 
 def get_one_temperature(line):
     (line, temp, timestamp) = store.get_one(store.last() - int(line))
@@ -63,14 +65,18 @@ def series_to_json(series):
                 )
             )
             store_if_kept_minute(date_value, n, value)
+            store_if_kept_hour(date_value, n, value)
         as_json.append(serie_as_json)
     return as_json
 
 
 def store_if_kept_minute(date_value, n, value):
     if date_value.endswith(KEPT_MINUTE):
-        store_cache.add_to_cache(date_value, n, value)
+        weekly_cache.add_to_cache(date_value, n, value)
 
+def store_if_kept_hour(date_value, n, value):
+    if date_value.endswith(KEPT_HOUR):
+        monthly_cache.add_to_cache(date_value, n, value)
 
 @app.route('/temperatures', methods=['GET'])
 def temperatures():
@@ -90,14 +96,14 @@ def temperature(line):
     return json.dumps(results)
 
 
-@app.route('/all-temperature-data.json', methods=['GET'])
-def send_all_data():
+@app.route('/weekly-temperature-data.json', methods=['GET'])
+def send_weekly_data():
     fetcher = StoreSeriesFetcher(store)
     fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
 
     store_as_lol = []
-    for serie in store_cache.get_series():
-        serie_as_list = store_cache.get_measurements(serie)
+    for serie in weekly_cache.get_series():
+        serie_as_list = weekly_cache.get_measurements(serie)
         store_as_lol.append(serie_as_list)
     return app.response_class(
         response=json.dumps(store_as_lol),
@@ -105,6 +111,20 @@ def send_all_data():
         mimetype='application/json'
     )
 
+@app.route('/monthly-temperature-data.json', methods=['GET'])
+def send_monthly_data():
+    fetcher = StoreSeriesFetcher(store)
+    fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
+
+    store_as_lol = []
+    for serie in monthly_cache.get_series():
+        serie_as_list = monthly_cache.get_measurements(serie)
+        store_as_lol.append(serie_as_list)
+    return app.response_class(
+        response=json.dumps(store_as_lol),
+        status=200,
+        mimetype='application/json'
+    )
 
 @app.route('/temperature-data.json', methods=['GET'])
 def send_data():
@@ -120,11 +140,26 @@ def send_data():
     )
 
 
-@app.route('/all-temperatures-graph', methods=['GET'])
-def all_graph():
+@app.route('/weekly-temperatures-graph', methods=['GET'])
+def weekly_graph():
     resp = make_response(
         render_template(
-            'all-graph.html',
+            'weekly-graph.html',
+            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            use_web_fonts=USE_WEB_FONTS,
+            use_jquery=USE_JQUERY,
+            dev_version=USE_MG_DEV_VERSION,
+            labels=labels
+        )
+    )
+    resp.headers['REFRESH'] = REFRESH_INTERVAL
+    return resp
+
+@app.route('/monthly-temperatures-graph', methods=['GET'])
+def monthly_graph():
+    resp = make_response(
+        render_template(
+            'monthly-graph.html',
             datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             use_web_fonts=USE_WEB_FONTS,
             use_jquery=USE_JQUERY,
