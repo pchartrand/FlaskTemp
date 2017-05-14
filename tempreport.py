@@ -64,19 +64,19 @@ def series_to_json(series):
                     value=value
                 )
             )
-            store_if_kept_minute(date_value, n, value)
-            store_if_kept_hour(date_value, n, value)
+            store_if_kept_minute(n, date_value, value)
+            store_if_kept_hour(n, date_value, value)
         as_json.append(serie_as_json)
     return as_json
 
 
-def store_if_kept_minute(date_value, n, value):
+def store_if_kept_minute(serie, date_value, value):
     if date_value.endswith(KEPT_MINUTE):
-        weekly_cache.add_to_cache(date_value, n, value)
+        weekly_cache.add_to_cache(serie, date_value, value)
 
-def store_if_kept_hour(date_value, n, value):
+def store_if_kept_hour(serie, date_value, value):
     if date_value.endswith(KEPT_HOUR):
-        monthly_cache.add_to_cache(date_value, n, value)
+        monthly_cache.add_to_cache(serie, date_value, value)
 
 @app.route('/temperatures', methods=['GET'])
 def temperatures():
@@ -95,11 +95,15 @@ def temperature(line):
 
     return json.dumps(results)
 
+def preload():
+    fetcher = StoreSeriesFetcher(store)
+    fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
 
 @app.route('/weekly-temperature-data.json', methods=['GET'])
 def send_weekly_data():
-    fetcher = StoreSeriesFetcher(store)
-    fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
+    preload()
+    too_old = (datetime.datetime.now() - datetime.timedelta(days=8)).strftime('%Y-%m-%d %H:%M:%S')
+    weekly_cache.delete_everything_older_than(too_old)
 
     store_as_lol = []
     for serie in weekly_cache.get_series():
@@ -113,10 +117,12 @@ def send_weekly_data():
 
 @app.route('/monthly-temperature-data.json', methods=['GET'])
 def send_monthly_data():
-    fetcher = StoreSeriesFetcher(store)
-    fetcher.fetch(60 * ARDUINO_NUMBER_OF_INPUTS)
+    preload()
 
     store_as_lol = []
+    too_old = (datetime.datetime.now()- datetime.timedelta(days=32)).strftime('%Y-%m-%d %H:%M:%S')
+    monthly_cache.delete_everything_older_than(too_old)
+
     for serie in monthly_cache.get_series():
         serie_as_list = monthly_cache.get_measurements(serie)
         store_as_lol.append(serie_as_list)
