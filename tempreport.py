@@ -20,7 +20,8 @@ from temperature_monitor.lib.templib import get_time
 from storecache import StoreCache
 
 labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
-
+DATETIME_SECONDS = '%Y-%m-%d %H:%M:%S'
+DATETIME_MINUTES = '%Y-%m-%d %H:%M'
 store = Store()
 weekly_cache = StoreCache()
 monthly_cache = StoreCache()
@@ -56,7 +57,7 @@ def series_to_json(series):
     for n, serie  in enumerate(series):
         serie_as_json = []
         for point in serie:
-            date_value = point[0].strftime('%Y-%m-%d %H:%M')
+            date_value = point[0].strftime(DATETIME_MINUTES)
             value = round(point[1], 1)
             serie_as_json.append(
                 dict(
@@ -82,7 +83,6 @@ def store_if_kept_hour(serie, date_value, value):
 def temperatures():
     results = get_temperatures()
     if request.args.get('format') == u'html':
-        print results
         return render_template("temperatures.html", results=results)
     return json.dumps(results)
 
@@ -102,7 +102,7 @@ def preload():
 @app.route('/weekly-temperature-data.json', methods=['GET'])
 def send_weekly_data():
     preload()
-    too_old = (datetime.datetime.now() - datetime.timedelta(days=8)).strftime('%Y-%m-%d %H:%M:%S')
+    too_old = (datetime.datetime.now() - datetime.timedelta(days=8)).strftime(DATETIME_SECONDS)
     weekly_cache.delete_everything_older_than(too_old)
 
     store_as_lol = []
@@ -120,7 +120,7 @@ def send_monthly_data():
     preload()
 
     store_as_lol = []
-    too_old = (datetime.datetime.now()- datetime.timedelta(days=32)).strftime('%Y-%m-%d %H:%M:%S')
+    too_old = (datetime.datetime.now()- datetime.timedelta(days=32)).strftime(DATETIME_SECONDS)
     monthly_cache.delete_everything_older_than(too_old)
 
     for serie in monthly_cache.get_series():
@@ -131,6 +131,7 @@ def send_monthly_data():
         status=200,
         mimetype='application/json'
     )
+
 
 @app.route('/temperature-data.json', methods=['GET'])
 def send_data():
@@ -151,7 +152,7 @@ def weekly_graph():
     resp = make_response(
         render_template(
             'weekly-graph.html',
-            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            datetime=datetime.datetime.now().strftime(DATETIME_SECONDS),
             use_web_fonts=USE_WEB_FONTS,
             use_jquery=USE_JQUERY,
             dev_version=USE_MG_DEV_VERSION,
@@ -166,7 +167,7 @@ def monthly_graph():
     resp = make_response(
         render_template(
             'monthly-graph.html',
-            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            datetime=datetime.datetime.now().strftime(DATETIME_SECONDS),
             use_web_fonts=USE_WEB_FONTS,
             use_jquery=USE_JQUERY,
             dev_version=USE_MG_DEV_VERSION,
@@ -183,7 +184,7 @@ def graph():
     resp = make_response(
         render_template(
             'graph.html',
-            datetime=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            datetime=datetime.datetime.now().strftime(DATETIME_SECONDS),
             n=n,
             more=n * 2,
             less=n / 2,
@@ -216,11 +217,30 @@ def show_variations():
     return render_template('variations.html', file_path=file_path, date_time=get_time())
 
 
+def dump_serie(serie_cache, file_name):
+    store_as_lol = []
+    for serie in serie_cache.get_series():
+        serie_as_list = serie_cache.get_measurements(serie)
+        store_as_lol.append(serie_as_list)
+    with open("{} {}.json".format(file_name, datetime.datetime.now().strftime(DATETIME_SECONDS) ), 'w') as outfile:
+        json.dump(store_as_lol, outfile)
+
+
+@app.route('/temperatures-dump', methods=['GET'])
+def temperatures_dump():
+    dump_serie(monthly_cache, 'monthly')
+    dump_serie(weekly_cache, 'weekly')
+    return "done {}".format(datetime.datetime.now().strftime(DATETIME_SECONDS))
+
+
 def retry():
     try:
         app.run(host='0.0.0.0', debug=True)
     except:
         sleep(3)
+        print("caught exception: will retry")
         retry()
+
+
 if __name__ == '__main__':
     retry()
