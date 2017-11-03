@@ -3,16 +3,15 @@ import glob
 import json
 
 
-def consolidate(pattern):
+def consolidate(pattern, year):
     sparse = {}
     consolidated = []
     outfilename = '{}.json'.format(pattern)
-    for file in glob.glob("{}*2017*.json".format(pattern)):
+    for file in glob.glob("{}*{}*.json".format(pattern, year)):
         print(file)
         with open(file) as jsonfile:
             data = json.load(jsonfile)
             for i, serie in enumerate(data):
-                print(i)
                 if not i in sparse:
                     sparse[i] = {}
                 for point in serie:
@@ -31,5 +30,6 @@ def consolidate(pattern):
 
 
 if __name__ == '__main__':
-    consolidate('monthly')
-    consolidate('weekly')
+    year = '2017'
+    consolidate('monthly', year)
+    consolidate('weekly', year)

@@ -7,10 +7,11 @@ import datetime
 from time import sleep
 
 import matplotlib
+
 matplotlib.use('Agg')  #graphical backend not requiring X11
 import matplotlib.pyplot as plt
 
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, url_for, redirect
 from pylab import savefig
 from temperature_monitor.lib.constants import ARDUINO_NUMBER_OF_INPUTS
 from temperature_monitor.lib.store import Store
@@ -232,6 +233,26 @@ def temperatures_dump():
     dump_serie(weekly_cache, 'weekly')
     return "done {}".format(datetime.datetime.now().strftime(DATETIME_SECONDS))
 
+
+@app.route('/monthly-temperatures-load', methods=['GET'])
+def load_monthly_serie():
+    load_serie(monthly_cache, 'monthly')
+    return redirect(url_for('monthly_graph'))
+
+
+@app.route('/weekly-temperatures-load', methods=['GET'])
+def load_weekly_serie():
+    load_serie(weekly_cache, 'weekly')
+    return redirect(url_for('weekly_graph'))
+
+
+def load_serie(cache, period):
+    file_path = os.path.join(os.path.dirname(__file__), "{}.json".format(period))
+    with open(file_path) as jsonfile:
+        data = json.load(jsonfile)
+        for i, serie in enumerate(data):
+            for point in serie:
+                cache.add_to_cache(i, point['date'], point['value'])
 
 def retry():
     try:
