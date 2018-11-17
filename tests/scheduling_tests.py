@@ -47,6 +47,11 @@ class EventTests(TestCase):
 
 
 class ScheduleTests(TestCase):
+    def test_can_convert_day_from_numeric_to_text_value(self):
+        day_as_numeric = Schedule().wd('LUN')
+        day_as_code = Schedule().weekday(day_as_numeric)
+        assert day_as_code == ('LUN')
+
     def test_can_get_an_ordered_list_of_week_days(self):
         schedule = Schedule()
         days = schedule.week()
