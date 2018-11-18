@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html>
-<head lang="en">
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>Températures</title>
-    {% if use_web_fonts %}
+    <title>Thermostat</title>
+       {% if use_web_fonts %}
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
     <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
     <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
@@ -50,47 +50,102 @@
     <script src='static/js/libs/metricsgraphics.min.js'></script>
     {% endif %}
 </head>
-<body background="static/temperature-fonds.png">
-    <div class="container">
+<body>
+
+
+<div class="container">
         <div class='head'>
             <p class="text-center">
                 {{datetime}} <br />
-                <a title="affiche les 24 dernières heures" href="?n=1440"> 24 h</a>
-                <a title="double la plage de temps" href="?n={{more}}"> ×2</a>
-                {{duration}}
-                <a title="divise la plage de temps par deux" href="?n={{less}}">÷2 </a>
-                <a title="affiche la dernière heure" href="?n=60">60 min</a> <br />
+                <a title="courant" href="/temperature-graph">courant</a> |
                 <a title="hebdomadaire" href="/weekly-temperatures-graph">hebdomadaire</a> |
-                <a title="mensuel" href="/monthly-temperatures-graph">mensuel</a> |
-                <a title="thermostat" href="schedule">thermostat</a>
+                <a title="mensuel" href="/monthly-temperatures-graph">mensuel</a>
+
             </p>
         <div class="content">
             <div class="row">
-                <div class="text-center"><p>&nbsp;</p></div>
+                <div class="col-sm-2">
+                <h3>Dimanche</h3>
+                <p>
+                    {% for event in schedule.sunday() %}
+                    {{ event.0 }} {{ event.1.temperature }}<br />
+                    {% endfor %}
+                </p>
+                </div>
+                <div class="col-sm-1">
+                <h3>Lundi</h3>
+                    <p>
+                        {% for event in schedule.monday() %}
+                        {{ event.0 }} {{ event.1.temperature }}<br />
+                        {% endfor %}
+                    </p>
+                </div>
+                <div class="col-sm-2">
+                <h3>Mardi</h3>
+                <p>
+                    {% for event in schedule.tuesday() %}
+                    {{ event.0 }} {{ event.1.temperature }}<br />
+                    {% endfor %}
+                </p>
+                </div>
+                <div class="col-sm-2">
+                <h3>Mercredi</h3>
+                <p>
+                    {% for event in schedule.wednesday() %}
+                    {{ event.0 }} {{ event.1.temperature }}<br />
+                    {% endfor %}
+                </p>
+
+                </div>
+                <div class="col-sm-1">
+                <h3>Jeudi</h3>
+                <p>
+                    {% for event in schedule.thursday() %}
+                    {{ event.0 }} {{ event.1.temperature }}<br />
+                    {% endfor %}
+                </p>
+
+                </div>
+                <div class="col-sm-2">
+                <h3>Vendredi</h3>
+                <p>
+                    {% for event in schedule.friday() %}
+                {{ event.0 }} {{ event.1.temperature }}<br />
+                {% endfor %}
+                </p>
+                </div>
+                <div class="col-sm-2">
+                <h3>Samedi</h3>
+                <p>
+                    {% for event in schedule.saturday() %}
+                    {{ event.0 }} {{ event.1.temperature }}<br />
+                    {% endfor %}
+                </p>
+                </div>
             </div>
             <div class="row">
                 <div class="text-center" id="temperatures"> </div>
             </div>
             <div class="row">
-                <div class="text-center"><a href="temperature-data.json?n={{n}}">données</a></div>
+                <div class="text-center"><a href="schedule-data.json">données</a></div>
             </div>
         </div>
     </div>
         <script language="javascript">
-        d3.json('temperature-data.json?n={{n}}', function(data) {
+        d3.json('schedule-data.json', function(data) {
             for (var i = 0; i < data.length; i++) {
                 data[i] = MG.convert.date(data[i], 'date','%Y-%m-%d %H:%M');
             }
 
             MG.data_graphic({
                 title: "Températures",
-                description: "Mesures des températures intérieures et extérieures des dernières 24 heures.",
+                description: "Chauffage pour la semaine",
                 data: data,
                 width: 1000,
                 height: 600,
                 point_size: 4,
                 target: '#temperatures',
-                legend: [ {% for label in labels %}'{{label}}',{% endfor %} ],
+                legend: [ 'thermostat', 'temperature' ],
                 legend_target: '.legend',
                 //aggregate_rollover: true,
                 colors: ['#00DD00', '#0000DD','#DD0000', '#BB00BB','#00BBBB','#BBBB00'],

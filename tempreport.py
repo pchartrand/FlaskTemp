@@ -19,17 +19,20 @@ from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
 from storecache import StoreCache
+from scheduling import Event, Schedule
+from scheduling.schedule import default_schedule
 
-labels =[ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
+labels = [ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 DATETIME_SECONDS = '%Y-%m-%d %H:%M:%S'
 DATETIME_MINUTES = '%Y-%m-%d %H:%M'
 store = Store()
 weekly_cache = StoreCache()
 monthly_cache = StoreCache()
+schedule = default_schedule()
 
 app = Flask(__name__)
 
-NUMBER_OF_MEASUREMENTS_IN_GRAPH = 360
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 300
 USE_WEB_FONTS = False
 USE_JQUERY = False
 USE_MG_DEV_VERSION = False
@@ -261,6 +264,37 @@ def retry():
         sleep(3)
         print("caught exception: will retry")
         retry()
+
+@app.route('/schedule', methods=['GET'])
+def show_schedule():
+    return render_template('schedule.html', schedule=schedule, date_time=get_time())
+
+@app.route('/schedule-data.json', methods=['GET'])
+def send_schedule():
+    serie = []
+    current = []
+    now =  datetime.datetime.now()
+    reference_serie = 2
+    week_start = now - datetime.timedelta(hours=now.hour, minutes=now.minute,days=now.weekday())
+    for day in schedule.schedule:
+        for time, event in schedule.schedule[day].items():
+            dt = week_start + datetime.timedelta(days=day,hours=event.hour,minutes=event.minute)
+            serie.append((dt, event.temperature))
+            try:
+                following_date_time, following_value = weekly_cache.return_closest_following_value(
+                    reference_serie,
+                    dt.strftime(DATETIME_MINUTES)
+                )
+                current.append((datetime.datetime.strptime(following_date_time, DATETIME_MINUTES), following_value))
+            except:
+                None
+    series_as_json = series_to_json([serie,current])
+
+    return app.response_class(
+        response=json.dumps(series_as_json),
+        status=200,
+        mimetype='application/json'
+    )
 
 
 if __name__ == '__main__':

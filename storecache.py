@@ -32,6 +32,23 @@ class StoreCache(object):
                 del self._cache[serie][date_time]
 
 
+    def return_closest_following_value(self, serie, date_value):
+        for date_time in self._cache[serie]:
+            if (date_time > date_value):
+                return date_time, self._cache[serie][date_time]
+
+
+    def return_closest_previous_value(self, serie, date_value):
+        previous_value = None
+        previous_date_time = None
+        for date_time in self._cache[serie]:
+            if (date_time > date_value):
+                return previous_date_time, previous_value
+            else:
+                previous_date_time = date_time
+                previous_value = self._cache[serie][date_time]
+
+
     def delete_everything_older_than(self, date_value):
         for serie in self.get_series():
             self.delete_older_than(serie, date_value)

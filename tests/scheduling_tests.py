@@ -66,16 +66,15 @@ class ScheduleTests(TestCase):
             w = days.pop(0)
             self.assertEqual(wd, w, "expected {} got {}".format(wd, w))
 
-    def test_can_create_a_schedule(self):
+    def _create_schedule(self):
+        self.night = Event(0, 0, 15)
+        self.wake = Event(6, 0, 18)
+        self.morning = Event(9, 0, 15)
+        self.evening = Event(18, 0, 18)
+        self.late = Event(22, 0, 15)
 
-        night = Event(0, 0, 15)
-        wake = Event(6, 0, 18)
-        morning = Event(9, 0, 15)
-        evening = Event(18, 0, 18)
-        late = Event(22, 0, 15)
-
-        a_weekday = (night, wake, morning, evening, late)
-        a_week_end_day = (night, Event(9, 30, 19), late)
+        a_weekday = (self.night, self.wake, self.morning, self.evening, self.late)
+        a_week_end_day = (self.night, Event(9, 30, 19), self.late)
 
         schedule = Schedule()
 
@@ -87,6 +86,12 @@ class ScheduleTests(TestCase):
             for hour in a_week_end_day:
                 schedule.add_event(weekend_day, hour)
 
+        return schedule
+
+    def test_can_create_a_schedule(self):
+
+        schedule = self._create_schedule()
+
         assert len(schedule.schedule) == 7  # days in the week
         assert len(schedule.schedule[2]) == 5  # events in a weekday
         self.assertEqual(
@@ -95,9 +100,9 @@ class ScheduleTests(TestCase):
             'expected {} got {}'.format(3,len(schedule.schedule[6]))
         )
 
-        assert schedule.schedule[2]['06:00'] == wake
-        assert schedule.schedule[3]['09:00'] == morning
-        assert schedule.schedule[4]['18:00'] == evening
+        assert schedule.schedule[2]['06:00'] == self.wake
+        assert schedule.schedule[3]['09:00'] == self.morning
+        assert schedule.schedule[4]['18:00'] == self.evening
 
         assert schedule.schedule[schedule.wd('DIM')]['09:30'].temperature == 19
         schedule.print_schedule()
