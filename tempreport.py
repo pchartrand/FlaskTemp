@@ -19,10 +19,10 @@ from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
 from storecache import StoreCache
-from scheduling import Event, Schedule
 from scheduling.schedule import default_schedule
 
 labels = [ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
+REFERENCE_SERIE = 3
 DATETIME_SECONDS = '%Y-%m-%d %H:%M:%S'
 DATETIME_MINUTES = '%Y-%m-%d %H:%M'
 store = Store()
@@ -32,7 +32,7 @@ schedule = default_schedule()
 
 app = Flask(__name__)
 
-NUMBER_OF_MEASUREMENTS_IN_GRAPH = 300
+NUMBER_OF_MEASUREMENTS_IN_GRAPH = 240
 USE_WEB_FONTS = False
 USE_JQUERY = False
 USE_MG_DEV_VERSION = False
@@ -217,7 +217,7 @@ def show_variations():
     for s in series:
         s.reverse()
     
-    plot_temperatures(plt, series, labels, [ 'green', 'royalblue', 'crimson', 'purple','blue','orange'])
+    plot_temperatures(plt, series, labels, [ 'green', 'royalblue', 'crimson', 'purple', 'blue', 'orange'])
     if not os.path.exists(file_path):
         savefig(file_path, dpi=300)
 
@@ -277,7 +277,6 @@ def send_schedule():
     serie = []
     current = []
     now =  datetime.datetime.now()
-    reference_serie = 2
     week_start = now - datetime.timedelta(hours=now.hour, minutes=now.minute,days=now.weekday())
     for day in schedule.schedule:
         for time, event in schedule.schedule[day].items():
@@ -285,7 +284,7 @@ def send_schedule():
             serie.append((dt, event.temperature))
             try:
                 following_date_time, following_value = weekly_cache.return_closest_following_value(
-                    reference_serie,
+                    REFERENCE_SERIE,
                     dt.strftime(DATETIME_MINUTES)
                 )
                 current.append((datetime.datetime.strptime(following_date_time, DATETIME_MINUTES), following_value))
