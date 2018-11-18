@@ -109,3 +109,27 @@ class StoreCacheTests(TestCase):
         cache.delete_older_than(1, '2016-04-01 12:45:54')
         serie = cache.get_measurements(1)
         self.assertEqual(3, len(serie))
+
+    def test_cat_retrieve_closest_previous_item_from_cache(self):
+        cache = StoreCache()
+        cache.add_to_cache(1, '2016-04-01 12:45', 1.0)
+        cache.add_to_cache(1, '2016-04-01 12:50', 1.1)
+        cache.add_to_cache(1, '2016-04-01 12:55', 1.2)
+        cache.add_to_cache(1, '2016-04-01 12:60', 1.3)
+
+        date_time, value = cache.return_closest_previous_value(1, '2016-04-01 12:52')
+
+        self.assertEqual(1.1, value)
+        self.assertEqual('2016-04-01 12:50', date_time)
+
+    def test_cat_retrieve_closest_following_item_from_cache(self):
+        cache = StoreCache()
+        cache.add_to_cache(1, '2016-04-01 12:45', 1.0)
+        cache.add_to_cache(1, '2016-04-01 12:50', 1.1)
+        cache.add_to_cache(1, '2016-04-01 12:55', 1.2)
+        cache.add_to_cache(1, '2016-04-01 12:60', 1.3)
+
+        date_time, value = cache.return_closest_following_value(1, '2016-04-01 12:52')
+
+        self.assertEqual(1.2, value)
+        self.assertEqual('2016-04-01 12:55', date_time)
