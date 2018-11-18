@@ -26,6 +26,16 @@ class StoreCache(object):
             )
         return serie_as_list
 
+    def measurements_count(self, serie=None):
+        if len(self._cache) > 0:
+            if serie is None:
+                serie = self._cache.keys()[0]
+            return len(self._cache[serie])
+        return 0
+
+    def oldest(self, serie):
+        return self._cache[serie].keys()[0]
+
     def delete_older_than(self, serie, date_value):
         for date_time in self._cache[serie]:
             if (date_time < date_value):

@@ -56,7 +56,7 @@ def get_temperatures():
     return results
 
 
-def series_to_json(series):
+def series_to_json(series, store=True):
     as_json = []
     for n, serie  in enumerate(series):
         serie_as_json = []
@@ -69,8 +69,9 @@ def series_to_json(series):
                     value=value
                 )
             )
-            store_if_kept_minute(n, date_value, value)
-            store_if_kept_hour(n, date_value, value)
+            if store:
+                store_if_kept_minute(n, date_value, value)
+                store_if_kept_hour(n, date_value, value)
         as_json.append(serie_as_json)
     return as_json
 
@@ -160,7 +161,8 @@ def weekly_graph():
             use_web_fonts=USE_WEB_FONTS,
             use_jquery=USE_JQUERY,
             dev_version=USE_MG_DEV_VERSION,
-            labels=labels
+            labels=labels,
+            show_reload=weekly_cache.measurements_count() == 0
         )
     )
     resp.headers['REFRESH'] = REFRESH_INTERVAL
@@ -175,7 +177,8 @@ def monthly_graph():
             use_web_fonts=USE_WEB_FONTS,
             use_jquery=USE_JQUERY,
             dev_version=USE_MG_DEV_VERSION,
-            labels=labels
+            labels=labels,
+            show_reload=monthly_cache.measurements_count() == 0
         )
     )
     resp.headers['REFRESH'] = REFRESH_INTERVAL
@@ -287,8 +290,9 @@ def send_schedule():
                 )
                 current.append((datetime.datetime.strptime(following_date_time, DATETIME_MINUTES), following_value))
             except:
+                print('failed to get temperature for {}'.format(dt.strftime(DATETIME_MINUTES)))
                 None
-    series_as_json = series_to_json([serie,current])
+    series_as_json = series_to_json([serie,current], store=False)
 
     return app.response_class(
         response=json.dumps(series_as_json),

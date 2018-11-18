@@ -20,6 +20,10 @@ class StoreCacheTests(TestCase):
         series = cache.get_series()
         self.assertEqual(0, series[0])
         self.assertEqual('my_serie', series[1])
+        self.assertEqual(1, cache.measurements_count(0))
+        self.assertEqual(1, cache.measurements_count())
+        self.assertEqual(2, cache.measurements_count('my_serie'))
+        self.assertEqual('2016-04-01 12:45:51', cache.oldest(0))
 
     def test_can_recover_series_from_cache(self):
         cache = StoreCache()
@@ -33,6 +37,13 @@ class StoreCacheTests(TestCase):
         series = cache.get_series()
 
         self.assertEqual(3, len(series))
+        self.assertEqual(3, cache.measurements_count(0))
+        self.assertEqual(2, cache.measurements_count(1))
+        self.assertEqual(1, cache.measurements_count(2))
+        self.assertEqual('2016-04-01 12:45:51', cache.oldest(0))
+        self.assertEqual('2016-04-01 12:45:54', cache.oldest(1))
+        self.assertEqual('2016-04-01 12:45:56', cache.oldest(2))
+
 
     def test_series_are_stored_sequentially(self):
         cache = StoreCache()

@@ -65,7 +65,11 @@
                 <div class="text-center"><p>&nbsp;</p></div>
             </div>
             <div class="row">
-                <div class="text-center" id="temperatures"> </div>
+                <div class="text-center" id="temperatures">
+                    {% if show_reload %}
+                    <form action="monthly-temperatures-load"><input type="submit" value="recharger depuis un fichier" /></form>
+                    {% endif %}
+                </div>
             </div>
             <div class="row">
                 <div class="text-center"><a href="monthly-temperature-data.json">données</a></div>
