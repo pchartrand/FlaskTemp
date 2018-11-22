@@ -1,8 +1,10 @@
+import yaml
+
 from collections import OrderedDict
 from .event import Event
 
 class Schedule(object):
-    WEEKDAYS = (('DIM', 0), ('LUN', 1), ('MAR', 2), ('MER', 3), ('JEU', 4), ('VEN', 5), ('SAM', 6))
+    WEEKDAYS = (('MON', 0), ('TUE', 1), ('WED', 2), ('THU', 3), ('FRI', 4), ('SAT', 5), ('SUN', 6))
 
     def __init__(self):
         self.schedule = OrderedDict()
@@ -11,10 +13,10 @@ class Schedule(object):
         return [d[0] for d in self.WEEKDAYS]
 
     def week(self):
-        return self.days()[1:6]
+        return self.days()[0:5]
 
     def weekend(self):
-        return [self.days()[6], self.days()[0]]
+        return self.days()[5:]
 
     def wd(self, as_code):
         return dict(self.WEEKDAYS)[as_code]
@@ -38,26 +40,54 @@ class Schedule(object):
             for event in self.schedule[wd]:
                 print(event, self.schedule[wd][event].temperature)
 
-    def sunday(self):
-        return tuple(self.schedule[0].items())
+
 
     def monday(self):
-        return tuple(self.schedule[1].items())
+        return tuple(self.schedule[0].items())
 
     def tuesday(self):
-        return tuple(self.schedule[2].items())
+        return tuple(self.schedule[1].items())
 
     def wednesday(self):
-        return tuple(self.schedule[3].items())
+        return tuple(self.schedule[2].items())
 
     def thursday(self):
-        return tuple(self.schedule[4].items())
+        return tuple(self.schedule[3].items())
 
     def friday(self):
-        return tuple(self.schedule[5].items())
+        return tuple(self.schedule[4].items())
 
     def saturday(self):
+        return tuple(self.schedule[5].items())
+
+    def sunday(self):
         return tuple(self.schedule[6].items())
+
+    def get_temperature_for(self, a_datetime):
+        dow = a_datetime.weekday()
+        hour = a_datetime.hour
+        minute = a_datetime.minute
+        yesterday = dow - 1
+        if yesterday == -1:
+            yesterday = 6
+        previous_event = Event(0, 0, self.schedule[yesterday].values()[-1].temperature)
+        for event_time in self.schedule[dow]:
+            current_event = self.schedule[dow][event_time]
+            if current_event.is_before((60*hour + minute), previous_event):
+                return previous_event.temperature
+            previous_event =  self.schedule[dow][event_time]
+
+
+def read_schedule(file):
+    with open(file,'r') as user_schedule:
+        data = yaml.load(user_schedule)
+
+    schedule = Schedule()
+    for day, events in data.items():
+        for event_data in events:
+            event = Event(*[int(e) for e in event_data.split(',')])
+            schedule.add_event(day, event)
+    return schedule
 
 
 def default_schedule():
@@ -80,3 +110,5 @@ def default_schedule():
         for hour in a_week_end_day:
             schedule.add_event(weekend_day, hour)
     return schedule
+
+

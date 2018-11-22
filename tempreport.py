@@ -19,7 +19,7 @@ from temperature_monitor.lib.storeseriesfetcher import StoreSeriesFetcher
 from temperature_monitor.lib.tempseriesplot import plot_temperatures
 from temperature_monitor.lib.templib import get_time
 from storecache import StoreCache
-from scheduling.schedule import default_schedule
+from scheduling.schedule import read_schedule
 
 labels = [ u'Extérieur', u'Sous-sol', u'C. à coucher', u'Bureau', u'Grenier',  u'Abeilles']
 REFERENCE_SERIE = 3
@@ -28,7 +28,7 @@ DATETIME_MINUTES = '%Y-%m-%d %H:%M'
 store = Store()
 weekly_cache = StoreCache()
 monthly_cache = StoreCache()
-schedule = default_schedule()
+schedule = read_schedule(os.path.join(os.path.dirname(__file__), 'schedule.yml'))
 
 app = Flask(__name__)
 
@@ -282,15 +282,16 @@ def send_schedule():
         for time, event in schedule.schedule[day].items():
             dt = week_start + datetime.timedelta(days=day,hours=event.hour,minutes=event.minute)
             serie.append((dt, event.temperature))
-            try:
-                following_date_time, following_value = weekly_cache.return_closest_following_value(
-                    REFERENCE_SERIE,
-                    dt.strftime(DATETIME_MINUTES)
-                )
-                current.append((datetime.datetime.strptime(following_date_time, DATETIME_MINUTES), following_value))
-            except:
-                print('failed to get temperature for {}'.format(dt.strftime(DATETIME_MINUTES)))
-                None
+            if dt <= now:
+                try:
+                    following_date_time, following_value = weekly_cache.return_closest_following_value(
+                        REFERENCE_SERIE,
+                        dt.strftime(DATETIME_MINUTES)
+                    )
+                    current.append((datetime.datetime.strptime(following_date_time, DATETIME_MINUTES), following_value))
+                except:
+                    print('failed to get temperature for {}'.format(dt.strftime(DATETIME_MINUTES)))
+                    None
     series_as_json = series_to_json([serie,current], store=False)
 
     return app.response_class(
