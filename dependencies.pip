@@ -4,3 +4,4 @@ matplotlib==2.2.3
 git+https://github.com/pchartrand/temperature-monitor.git#egg=Package
 freezegun==0.3.11
 PyYAML==3.13
+requests==2.19
